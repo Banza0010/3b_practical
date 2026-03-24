@@ -1,0 +1,315 @@
+{
+  "info": {
+    "_postman_id": "792d22b2-777a-4131-9798-5faae245d778",
+    "name": "Cat Facts API",
+    "description": "This API provides endpoints to get random cat facts",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "7483853"
+  },
+  "item": [
+    {
+      "name": "breeds",
+      "item": [
+        {
+          "name": "Returns a list of breeds",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Response status code is 200\", function () {",
+                  "\tpm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Does not exceed requested limit\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    // Get 'limit' from request query params",
+                  "    const limit = parseInt(pm.request.url.query.get(\"limit\"));",
+                  "    //pm.expect(jsonData.data.length).to.eql(limit); //if less items available than limit this fails",
+                  "    pm.expect(jsonData.data.length).to.be.at.most(limit); //if fewer items available than the limit this will work",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 500ms\", function () {",
+                  "    // 500ms seems to be a standard but this could be changed depending on system",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "",
+                  "",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{Base_url}}/breeds?limit=6",
+              "host": [
+                "{{Base_url}}"
+              ],
+              "path": [
+                "breeds"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "6"
+                }
+              ]
+            },
+            "description": "returns a list of breeds"
+          },
+          "response": []
+        }
+      ],
+      "description": "Folder for breeds"
+    },
+    {
+      "name": "fact",
+      "item": [
+        {
+          "name": "Positive",
+          "item": [
+            {
+              "name": "Returns a random cat fact",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Response status code is 200\", function(){",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response contains fact and length\", function(){",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"fact\");",
+                      "    pm.expect(jsonData).to.have.property(\"length\");",
+                      "});",
+                      "",
+                      "pm.test(\"Fact length is not greater than the length property\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const resultLength = jsonData.fact.length;",
+                      "    pm.expect(resultLength).to.be.at.most(jsonData.length);",
+                      "});",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{Base_url}}/fact?max_length={{max_length}}",
+                  "host": [
+                    "{{Base_url}}"
+                  ],
+                  "path": [
+                    "fact"
+                  ],
+                  "query": [
+                    {
+                      "key": "max_length",
+                      "value": "{{max_length}}"
+                    }
+                  ]
+                },
+                "description": "returns a random cat fact"
+              },
+              "response": []
+            },
+            {
+              "name": "Missing/Null max_Length",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Response status code is 200\", function(){",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Handles null/missing max_length by returning default results\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.data).to.be.an('array')",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{Base_url}}/facts?max_length=",
+                  "host": [
+                    "{{Base_url}}"
+                  ],
+                  "path": [
+                    "facts"
+                  ],
+                  "query": [
+                    {
+                      "key": "max_length",
+                      "value": ""
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Negative",
+          "item": [
+            {
+              "name": "Negative Validation (Invalid Data Type) - String",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Should return 400 for non-integer max_length\", function () {  //400 bad data-type",
+                      "    pm.expect(pm.response.code).to.eql(400); //don't expect success",
+                      "});",
+                      "",
+                      "pm.test(\"Response body contains an error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message'); //if error message is in the response body ",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{Base_url}}/facts?max_length=abc",
+                  "host": [
+                    "{{Base_url}}"
+                  ],
+                  "path": [
+                    "facts"
+                  ],
+                  "query": [
+                    {
+                      "key": "max_length",
+                      "value": "abc"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Folder for fact"
+    },
+    {
+      "name": "facts",
+      "item": [
+        {
+          "name": "Get a list of cat facts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{Base_url}}/facts?limit=40&max_length={{max_length}}",
+              "host": [
+                "{{Base_url}}"
+              ],
+              "path": [
+                "facts"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "40"
+                },
+                {
+                  "key": "max_length",
+                  "value": "{{max_length}}"
+                }
+              ]
+            },
+            "description": "Get a list of cat facts"
+          },
+          "response": []
+        }
+      ],
+      "description": "Folder for facts"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "max_length",
+      "value": "140",
+      "type": "string"
+    }
+  ]
+}
